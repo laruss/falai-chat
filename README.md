@@ -164,6 +164,7 @@ MIT
 ## TODO
 
 - [ ] Save chat settings (model, theme, etc.) to local storage
+- [ ] Add the ability to regenerate last AI message and "reply" button
 - [ ] Improve error handling with user-friendly error messages and retry logic
 - [ ] Add generation parameters (image size, steps, guidance scale) to model options
 - [ ] Add creation and last updated timestamps to chat sessions
