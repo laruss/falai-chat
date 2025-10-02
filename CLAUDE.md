@@ -9,6 +9,7 @@ This is a Next.js 15 chat application that uses AI SDK 5.0 to generate images vi
 ## Commands
 
 ### Development
+
 ```bash
 bun run dev              # Start dev server with Turbopack
 bun run build            # Build for production with Turbopack
@@ -16,6 +17,7 @@ bun run start            # Start production server
 ```
 
 ### Code Quality
+
 ```bash
 bun run typecheck        # Run TypeScript type checking
 bun run lint             # Run ESLint
@@ -39,22 +41,27 @@ The app uses AI SDK 5.0, which introduced breaking changes to the message struct
   - `file`: File/image content with `url` and `mediaType` properties
 
 **Example**:
+
 ```typescript
 const message: UIMessage = {
   id: '1',
   role: 'user',
   parts: [
     { type: 'text', text: 'Generate an image' },
-    { type: 'file', url: 'data:image/png;base64,...', mediaType: 'image/png' }
-  ]
-}
+    { type: 'file', url: 'data:image/png;base64,...', mediaType: 'image/png' },
+  ],
+};
 ```
 
 ### Image Generation Flow
 
-1. **Frontend** (`src/app/page.tsx`): User submits prompt via `useChat` hook
+1. **Frontend** (`src/app/[id]/chat.tsx`):
+   - User configures image size via `ImageSizeSelector`
+   - User submits prompt via `useChat` hook
+   - Message metadata includes `model`, `useMessageId` (for image editing), and `settings` (image_size, etc.)
 2. **API Route** (`src/app/api/chat/route.ts`):
    - Receives `UIMessage[]` from client
+   - Validates message metadata with Zod schemas (`messageMetadataSchema`, `settingsSchema`)
    - Creates a `UIMessageStream` with `createUIMessageStream()`
    - Calls `generateImage()` from `src/lib/falai/helpers.ts`
    - Writes file parts to stream with base64-encoded image data
@@ -67,10 +74,12 @@ Generated images are stored in the `static/` folder (defined in `src/constants.t
 
 ### Component Structure
 
-- **Page** (`src/app/page.tsx`): Main container, manages state (input, selected model, attached images)
+- **Chat** (`src/app/[id]/chat.tsx`): Main container, manages state (input, selected model, attached images, image size)
 - **Header** (`src/components/chat/header.tsx`): App title and model selector
 - **Conversation** (`src/components/chat/conversation.tsx`): Message list with avatar, text, and images
-- **ChatInput** (`src/components/chat/chat-input.tsx`): Input field with image attachment
+- **ChatInput** (`src/components/chat/chat-input.tsx`): Input field container
+  - **Attachments** (`src/components/chat/attachments.tsx`): Image attachment with drag-and-drop
+  - **ImageSizeSelector** (`src/components/chat/image-size-selector.tsx`): Image size configuration with preset and custom options
 - **ImageModal** (`src/components/chat/image-modal.tsx`): Full-screen image viewer with carousel navigation
   - Extracts all images from messages in reverse order (newest first)
   - Uses Embla Carousel for navigation
@@ -84,7 +93,7 @@ Generated images are stored in the `static/` folder (defined in `src/constants.t
 
 ## Type Safety
 
-The project uses strict TypeScript. When working with message parts:
+The project uses strict TypeScript with Zod for runtime validation. When working with message parts:
 
 ```typescript
 // Correct way to check for image files
@@ -95,11 +104,30 @@ message.parts.forEach((part) => {
 });
 ```
 
+### Message Metadata Schema
+
+Message metadata is validated using Zod schemas in `src/lib/types.ts`:
+
+```typescript
+const messageMetadataSchema = z.object({
+  model: z.enum(Object.values(MODELS)),
+  useMessageId: z.string().optional(),
+  settings: settingsSchema.partial().optional(),
+});
+```
+
+The `settings` schema supports:
+
+- `image_size`: Preset variants or custom `{width, height}` object
+- Other generation parameters (steps, guidance, etc.)
+- All fields are optional with defaults applied during validation
+
 Never use `any` or `unknown` types. Use proper type narrowing or define interfaces for specific part types.
 
 ## Models
 
 Available fal.ai models are defined in `src/lib/falai/constants.ts`:
+
 - `SANA`: Cheapest option ($0.01/megapixel)
 - `FLUX_DEV`: Mid-tier ($0.025/megapixel)
 - `QWEN_IMAGE_EDIT_PLUS`: Image creation and editing ($0.03/megapixel)

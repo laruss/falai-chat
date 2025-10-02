@@ -1,4 +1,10 @@
-import { FalAiModels, ModelCapability, ModelUiOption } from './types';
+import {
+  FalAiModels,
+  ImageSizeUiOption,
+  ImageSizeVariants,
+  ModelCapability,
+  ModelUiOption,
+} from './types';
 
 export const MODELS = {
   /**
@@ -50,3 +56,39 @@ export const MODEL_UI_OPTIONS = [
     description: '$0.01/MP, can only generate images',
   },
 ] as const satisfies ReadonlyArray<ModelUiOption>;
+
+export const IMAGE_SIZES = {
+  SQUARE_HD: 'square_hd',
+  SQUARE: 'square',
+  PORTRAIT_4_3: 'portrait_4_3',
+  PORTRAIT_16_9: 'portrait_16_9',
+  LANDSCAPE_4_3: 'landscape_4_3',
+  LANDSCAPE_16_9: 'landscape_16_9',
+} as const satisfies Record<string, ImageSizeVariants>;
+
+export const IMAGE_SIZE_UI_OPTIONS = [
+  {
+    value: IMAGE_SIZES.SQUARE_HD,
+    label: 'Square HD',
+  },
+  {
+    value: IMAGE_SIZES.SQUARE,
+    label: 'Square',
+  },
+  {
+    value: IMAGE_SIZES.PORTRAIT_4_3,
+    label: 'Portrait 4:3',
+  },
+  {
+    value: IMAGE_SIZES.PORTRAIT_16_9,
+    label: 'Portrait 16:9',
+  },
+  {
+    value: IMAGE_SIZES.LANDSCAPE_4_3,
+    label: 'Landscape 4:3',
+  },
+  {
+    value: IMAGE_SIZES.LANDSCAPE_16_9,
+    label: 'Landscape 16:9',
+  },
+] as const satisfies ReadonlyArray<ImageSizeUiOption>;

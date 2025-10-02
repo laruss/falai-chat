@@ -1,6 +1,6 @@
 import { FileUIPart } from 'ai';
 
-import { FalAiModels } from '@/lib/falai';
+import { FalAiModels, IMAGE_SIZES } from '@/lib/falai';
 import { Message } from '@/lib/types';
 
 const getMediaFromMessage = (message: Message) => {
@@ -74,3 +74,15 @@ export const createErrorResponse = (
   status: number = 500
 ): Response =>
   new Response(JSON.stringify({ error: error.message }), { status });
+
+export const getSettings = (messages: Array<Message>) => {
+  const lastMessage = messages[messages.length - 1];
+
+  const settings = lastMessage.metadata?.settings || {};
+
+  return {
+    enable_safety_checker: false,
+    image_size: IMAGE_SIZES.SQUARE_HD,
+    ...settings,
+  };
+};

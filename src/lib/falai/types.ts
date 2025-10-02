@@ -3,7 +3,7 @@ export type FalAiModels =
   | 'fal-ai/flux/dev'
   | 'fal-ai/sana/v1.5/4.8b';
 
-type ImageSizeVariants =
+export type ImageSizeVariants =
   | 'square_hd'
   | 'square'
   | 'portrait_4_3'
@@ -11,16 +11,16 @@ type ImageSizeVariants =
   | 'landscape_4_3'
   | 'landscape_16_9';
 
-type ImageSize = { width: number; height: number } | ImageSizeVariants;
+export type ImageSize = { width: number; height: number } | ImageSizeVariants;
 
-type OutputFormats = 'jpeg' | 'png';
+export type OutputFormats = 'jpeg' | 'png';
 
-type ContentTypes = 'image/jpeg' | 'image/png';
+export type ContentTypes = 'image/jpeg' | 'image/png';
 
-type Acceleration = 'none' | 'regular';
+export type Acceleration = 'none' | 'regular';
 
 // for now, is used only in sana
-type StyleName =
+export type StyleName =
   | '(No style)'
   | 'Cinematic'
   | 'Photographic'
@@ -84,11 +84,11 @@ export type BasicParams = {
   acceleration?: Acceleration;
 };
 
-type QwenImageEditPlusParams = BasicParams;
+export type QwenImageEditPlusParams = BasicParams;
 
-type FluxDevParams = Omit<BasicParams, 'image_urls' | 'negative_prompt'>;
+export type FluxDevParams = Omit<BasicParams, 'image_urls' | 'negative_prompt'>;
 
-type SanaParams = Omit<BasicParams, 'image_urls'> & {
+export type SanaParams = Omit<BasicParams, 'image_urls'> & {
   style_name?: StyleName;
 };
 
@@ -128,4 +128,9 @@ export type ModelUiOption = Readonly<{
   value: FalAiModels;
   label: string;
   description: string;
+}>;
+
+export type ImageSizeUiOption = Readonly<{
+  value: ImageSizeVariants;
+  label: string;
 }>;

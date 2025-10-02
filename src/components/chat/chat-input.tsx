@@ -1,8 +1,10 @@
 import { ChatStatus } from 'ai';
 import { Paperclip, Send, X } from 'lucide-react';
 import Image from 'next/image';
-import { FormEvent, useMemo, useRef, useState } from 'react';
+import { FormEvent, useMemo, useRef } from 'react';
 
+import { Attachments } from '@/components/chat/attachments';
+import { ImageSizeSelector } from '@/components/chat/image-size-selector';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -10,6 +12,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { ImageSize } from '@/lib/falai/types';
 import { Message } from '@/lib/types';
 
 interface ChatInputProps {
@@ -25,6 +28,8 @@ interface ChatInputProps {
   onRemoveImage?: (index: number) => void;
   canAttachImages: boolean;
   canGenerateImage: boolean;
+  imageSize: ImageSize;
+  onImageSizeChange: (size: ImageSize) => void;
 }
 
 export function ChatInput({
@@ -40,6 +45,8 @@ export function ChatInput({
   canGenerateImage,
   onAttachImages,
   onRemoveImage,
+  imageSize,
+  onImageSizeChange,
 }: ChatInputProps) {
   const replyToImage = useMemo(() => {
     if (!replyToMessageId) return null;
@@ -55,7 +62,6 @@ export function ChatInput({
   }, [replyToMessageId, messages]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onInputChange(e.target.value);
@@ -82,56 +88,9 @@ export function ChatInput({
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!canAttachImages) return;
-
-    const files = Array.from(e.target.files || []);
-    const imageFiles = files.filter((file) => file.type.startsWith('image/'));
-    if (imageFiles.length > 0 && onAttachImages) {
-      onAttachImages(imageFiles);
-    }
-    // Reset input value to allow selecting the same file again
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    if (!canAttachImages) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    if (!canAttachImages) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-
-    const files = Array.from(e.dataTransfer.files);
-    const imageFiles = files.filter((file) => file.type.startsWith('image/'));
-    if (imageFiles.length > 0 && onAttachImages) {
-      onAttachImages(imageFiles);
-    }
-  };
-
   return (
     <footer className="border-t bg-white/80 backdrop-blur-sm p-4">
-      <div
-        className="max-w-4xl mx-auto"
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      >
+      <div className="max-w-4xl mx-auto">
         {replyToImage && (
           <div className="mb-2 flex items-center gap-2 p-2 bg-gray-100 rounded-lg">
             <span className="text-sm text-gray-600">Using image</span>
@@ -155,42 +114,18 @@ export function ChatInput({
             )}
           </div>
         )}
-        {attachedImages.length > 0 && (
-          <div className="mb-2 flex flex-wrap gap-2">
-            {attachedImages.map((file, index) => (
-              <div
-                key={index}
-                className="relative group bg-gray-100 rounded-lg p-1"
-              >
-                <Image
-                  src={URL.createObjectURL(file)}
-                  alt={file.name}
-                  width={80}
-                  height={80}
-                  className="rounded object-cover"
-                />
-                {onRemoveImage && (
-                  <button
-                    onClick={() => onRemoveImage(index)}
-                    className="absolute -top-2 -right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-colors"
-                    aria-label="Remove image"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+        <Attachments
+          ref={fileInputRef}
+          attachedImages={attachedImages}
+          onAttachImages={onAttachImages}
+          onRemoveImage={onRemoveImage}
+          canAttachImages={canAttachImages}
+          disabled={status !== 'ready'}
+        />
         <form
           onSubmit={handleSubmit}
           className="flex gap-2 items-start relative"
         >
-          {isDragging && (
-            <div className="absolute inset-0 bg-blue-50 border-2 border-dashed border-blue-400 rounded-lg flex items-center justify-center z-10 pointer-events-none">
-              <p className="text-blue-600 font-medium">Drop images here</p>
-            </div>
-          )}
           <div className="relative flex-1">
             <Textarea
               ref={textareaRef}
@@ -207,32 +142,30 @@ export function ChatInput({
               className="flex-1 min-h-[72px] max-h-[192px] resize-none pr-10"
               rows={3}
             />
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={status !== 'ready' || !canAttachImages}
-                  className="absolute right-2 bottom-2 p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  aria-label="Attach file"
-                >
-                  <Paperclip className="h-4 w-4" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {!canAttachImages
-                  ? 'Attaching images is disabled for the selected model'
-                  : 'Attach image'}
-              </TooltipContent>
-            </Tooltip>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleFileSelect}
-              className="hidden"
-            />
+            <div className="absolute right-2 bottom-2 flex items-center gap-1">
+              <ImageSizeSelector
+                imageSize={imageSize}
+                onImageSizeChange={onImageSizeChange}
+              />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={status !== 'ready' || !canAttachImages}
+                    className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Attach file"
+                  >
+                    <Paperclip className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {!canAttachImages
+                    ? 'Attaching images is disabled for the selected model'
+                    : 'Attach image'}
+                </TooltipContent>
+              </Tooltip>
+            </div>
           </div>
           <Button
             type="submit"

@@ -10,7 +10,8 @@ import { Conversation } from '@/components/chat/conversation';
 import { Header } from '@/components/chat/header';
 import { ImageModal } from '@/components/chat/image-modal';
 import { FalAiModels, MODEL_CAPABILITIES } from '@/lib/falai';
-import { MODELS } from '@/lib/falai/constants';
+import { IMAGE_SIZES, MODELS } from '@/lib/falai/constants';
+import { ImageSize } from '@/lib/falai/types';
 import { convertFilesToDataURLs } from '@/lib/helpers';
 import { Message } from '@/lib/types';
 
@@ -32,6 +33,7 @@ export default function Chat({ initMessages, id }: ChatProps) {
   const [replyToMessageId, setReplyToMessageId] = useState<string | null>(null);
   const [attachedImages, setAttachedImages] = useState<File[]>([]);
   const [selectedModel, setSelectedModel] = useState<FalAiModels>(MODELS.SANA);
+  const [imageSize, setImageSize] = useState<ImageSize>(IMAGE_SIZES.SQUARE_HD);
 
   useEffect(() => {
     if (status === 'error' && error) {
@@ -75,6 +77,9 @@ export default function Chat({ initMessages, id }: ChatProps) {
         metadata: {
           model: selectedModel,
           useMessageId: replyToMessageId || undefined,
+          settings: {
+            image_size: imageSize,
+          },
         },
       });
       setInput('');
@@ -116,6 +121,8 @@ export default function Chat({ initMessages, id }: ChatProps) {
         canGenerateImage={MODEL_CAPABILITIES[selectedModel].canGenerateImages}
         onAttachImages={handleAttachImages}
         onRemoveImage={handleRemoveImage}
+        imageSize={imageSize}
+        onImageSizeChange={setImageSize}
       />
 
       <ImageModal

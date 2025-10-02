@@ -9,11 +9,17 @@ import { generateImage } from '@/lib/falai';
 import { tryCatch } from '@/lib/helpers';
 import { ApiRequest, Message } from '@/lib/types';
 
-import { createErrorResponse, getLastMessageData } from './helpers';
+import {
+  createErrorResponse,
+  getLastMessageData,
+  getSettings,
+} from './helpers';
 
 export async function POST(req: ApiRequest) {
   const { messages, id } =
     await req.json<Readonly<{ messages: Message[]; id: string }>>();
+
+  const settings = getSettings(messages);
 
   const { result: messageData, error } = await tryCatch(async () =>
     getLastMessageData(messages)
@@ -32,8 +38,7 @@ export async function POST(req: ApiRequest) {
         model: messageData.model,
         prompt: messageData.text,
         options: {
-          enable_safety_checker: false,
-          image_size: 'square',
+          ...settings,
           image_urls: messageData.media.map((file) => file.url),
         },
       });

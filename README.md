@@ -1,5 +1,7 @@
 # fal.ai Chat
 
+### Version 0.1.1
+
 A Next.js 15 chat application for generating AI images using [fal.ai](https://fal.ai) models. Built with the AI SDK 5.0, featuring a modern UI with shadcn/ui components and Tailwind CSS 4.0.
 
 ## Features
@@ -9,6 +11,8 @@ A Next.js 15 chat application for generating AI images using [fal.ai](https://fa
 - Image editing capabilities (model-dependent)
 - Session management with persistent storage
 - Reply to messages with context
+- Image attachment with drag-and-drop support
+- Customizable image size (preset options + custom dimensions)
 - Full-screen image viewer with carousel navigation
 - Fast development with Bun runtime
 
@@ -32,23 +36,27 @@ A Next.js 15 chat application for generating AI images using [fal.ai](https://fa
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd falaiChat
 ```
 
 2. Install dependencies:
+
 ```bash
 bun install
 ```
 
 3. Set up environment variables:
-Create a `.env.local` file in the root directory:
+   Create a `.env.local` file in the root directory:
+
 ```env
 FAL_API_KEY=your_fal_ai_api_key_here
 ```
 
 4. Create the static folder for chat storage:
+
 ```bash
 mkdir -p static/chats
 ```
@@ -56,6 +64,7 @@ mkdir -p static/chats
 ### Development
 
 Start the development server:
+
 ```bash
 bun run dev
 ```
@@ -72,11 +81,13 @@ bun run start
 ## Available Scripts
 
 ### Development
+
 - `bun run dev` - Start development server with Turbopack
 - `bun run build` - Build for production with Turbopack
 - `bun run start` - Start production server
 
 ### Code Quality
+
 - `bun run typecheck` - Run TypeScript type checking
 - `bun run lint` - Run ESLint
 - `bun run lint:fix` - Run ESLint with auto-fix
@@ -94,13 +105,19 @@ src/
 │   ├── layout.tsx      # Root layout
 │   └── page.tsx        # Chat list page
 ├── components/
-│   ├── chat/           # Chat-specific components
+│   ├── chat/
+│   │   ├── attachments.tsx        # Image attachment with drag-and-drop
+│   │   ├── chat-input.tsx         # Input field with controls
+│   │   ├── conversation.tsx       # Message list display
+│   │   ├── header.tsx             # App header with model selector
+│   │   ├── image-modal.tsx        # Full-screen image viewer
+│   │   └── image-size-selector.tsx # Image size configuration
 │   └── ui/             # shadcn/ui components
 ├── lib/
 │   ├── falai/          # fal.ai integration
 │   ├── chat-store.ts   # Chat persistence
 │   ├── helpers.ts      # Utility functions
-│   └── types.ts        # TypeScript types
+│   └── types.ts        # TypeScript types with Zod schemas
 └── constants.ts        # App constants
 ```
 
@@ -131,9 +148,9 @@ const message: UIMessage = {
   role: 'user',
   parts: [
     { type: 'text', text: 'Generate an image' },
-    { type: 'file', url: 'data:image/png;base64,...', mediaType: 'image/png' }
-  ]
-}
+    { type: 'file', url: 'data:image/png;base64,...', mediaType: 'image/png' },
+  ],
+};
 ```
 
 ### Image Generation Flow
@@ -147,9 +164,18 @@ const message: UIMessage = {
 ### Session Storage
 
 Chat sessions are stored as JSON files in `static/chats/`:
+
 - Each chat has a unique ID
 - Messages persist across page reloads
 - Sessions can be created, viewed, and deleted
+
+### Image Size Configuration
+
+The app supports multiple image size options:
+
+- **Preset sizes**: Square HD, Square, Portrait 4:3, Portrait 16:9, Landscape 4:3, Landscape 16:9
+- **Custom dimensions**: User-defined width and height (256-2048px)
+- Size settings are passed to the API and stored in message metadata
 
 ## Contributing
 
@@ -163,15 +189,20 @@ MIT
 
 ## TODO
 
+- [ ] Migrate to Zustand for state management
 - [ ] Save chat settings (model, theme, etc.) to local storage
+  - [ ] replace local storage persistence with Zustand persist middleware
 - [ ] Add the ability to regenerate last AI message and "reply" button
 - [ ] Improve error handling with user-friendly error messages and retry logic
-- [ ] Add generation parameters (image size, steps, guidance scale) to model options
+- [x] Add generation parameters (image size, steps, guidance scale) to model options
+  - [x] Image size selector with preset and custom options
+  - [ ] Other settings (steps, guidance scale, etc.)
+- [ ] Add possibility automatically determine image size based on the attached image (if only 1 image is attached)
 - [ ] Add creation and last updated timestamps to chat sessions
 - [ ] Display chat metadata (date, message count) in chat list
 - [ ] Add unit tests for utility functions and helpers
 - [ ] Add integration tests for API routes
-- [ ] Add E2E tests with Playwright
+- [ ] Add tests with React Testing Library
 - [ ] Implement chat search/filter functionality
 - [ ] Add export chat history feature (JSON, Markdown)
 - [ ] Add image download functionality
