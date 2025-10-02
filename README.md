@@ -55,12 +55,6 @@ bun install
 FAL_API_KEY=your_fal_ai_api_key_here
 ```
 
-4. Create the static folder for chat storage:
-
-```bash
-mkdir -p static/chats
-```
-
 ### Development
 
 Start the development server:
