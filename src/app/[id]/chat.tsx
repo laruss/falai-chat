@@ -9,7 +9,6 @@ import { Conversation } from '@/components/chat/conversation';
 import { DragNDrop } from '@/components/chat/drag-n-drop';
 import { Header } from '@/components/chat/header';
 import { ImageModal } from '@/components/chat/image-modal';
-import { MODES } from '@/lib/falai';
 import { useFalAiModel } from '@/lib/hooks/useFalAiModel';
 import { useMode } from '@/lib/hooks/useMode';
 import { useAppStore } from '@/lib/state/store';
