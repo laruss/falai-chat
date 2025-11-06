@@ -31,8 +31,8 @@ const eslintConfig = [
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
 
-      // Disallow console usage
-      'no-console': 'error',
+      // Disallow console.log, but allow console.error and console.warn
+      'no-console': ['error', { allow: ['warn', 'error'] }],
     },
   },
 ];

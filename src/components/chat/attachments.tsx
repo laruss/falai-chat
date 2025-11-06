@@ -1,35 +1,24 @@
 import { X } from 'lucide-react';
 import Image from 'next/image';
-import { forwardRef, useState } from 'react';
+import { forwardRef } from 'react';
+
+import { useAppStore } from '@/lib/state/store';
 
 interface AttachmentsProps {
-  attachedImages: File[];
-  onAttachImages?: (files: File[]) => void;
-  onRemoveImage?: (index: number) => void;
   canAttachImages: boolean;
-  disabled?: boolean;
 }
 
 export const Attachments = forwardRef<HTMLInputElement, AttachmentsProps>(
-  (
-    {
-      attachedImages,
-      onAttachImages,
-      onRemoveImage,
-      canAttachImages,
-      disabled = false,
-    },
-    ref
-  ) => {
-    const [isDragging, setIsDragging] = useState(false);
+  ({ canAttachImages }, ref) => {
+    const { attachedImages, setAttachedImages } = useAppStore();
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (!canAttachImages) return;
 
       const files = Array.from(e.target.files || []);
       const imageFiles = files.filter((file) => file.type.startsWith('image/'));
-      if (imageFiles.length > 0 && onAttachImages) {
-        onAttachImages(imageFiles);
+      if (imageFiles.length > 0) {
+        setAttachedImages(imageFiles);
       }
       // Reset input value to allow selecting the same file again
       if (e.target) {
@@ -37,48 +26,8 @@ export const Attachments = forwardRef<HTMLInputElement, AttachmentsProps>(
       }
     };
 
-    const handleDragOver = (e: React.DragEvent) => {
-      if (!canAttachImages || disabled) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(true);
-    };
-
-    const handleDragLeave = (e: React.DragEvent) => {
-      if (!canAttachImages || disabled) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(false);
-    };
-
-    const handleDrop = (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(false);
-
-      if (!canAttachImages || disabled) return;
-
-      const files = Array.from(e.dataTransfer.files);
-      const imageFiles = files.filter((file) => file.type.startsWith('image/'));
-      if (imageFiles.length > 0 && onAttachImages) {
-        onAttachImages(imageFiles);
-      }
-    };
-
     return (
-      <div
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        className="relative"
-      >
-        {isDragging && (
-          <div className="absolute inset-0 bg-blue-50 border-2 border-dashed border-blue-400 rounded-lg flex items-center justify-center z-10 pointer-events-none">
-            <p className="text-blue-600 font-medium">Drop images here</p>
-          </div>
-        )}
+      <div className="relative">
         {attachedImages.length > 0 && (
           <div className="mb-2 flex flex-wrap gap-2">
             {attachedImages.map((file, index) => (
@@ -93,15 +42,18 @@ export const Attachments = forwardRef<HTMLInputElement, AttachmentsProps>(
                   height={80}
                   className="rounded object-cover"
                 />
-                {onRemoveImage && (
-                  <button
-                    onClick={() => onRemoveImage(index)}
-                    className="absolute -top-2 -right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-colors"
-                    aria-label="Remove image"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                )}
+                <button
+                  onClick={() => {
+                    const newImages = attachedImages.filter(
+                      (_, i) => i !== index
+                    );
+                    setAttachedImages(newImages);
+                  }}
+                  className="absolute -top-2 -right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-colors"
+                  aria-label="Remove image"
+                >
+                  <X className="h-3 w-3" />
+                </button>
               </div>
             ))}
           </div>

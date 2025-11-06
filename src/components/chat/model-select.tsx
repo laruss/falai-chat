@@ -1,3 +1,5 @@
+import { Spinner } from '@mynaui/icons-react';
+
 import {
   Select,
   SelectContent,
@@ -9,12 +11,14 @@ import { FalAiModels } from '@/lib/falai';
 import { MODEL_UI_OPTIONS } from '@/lib/falai/constants';
 
 interface ModelSelectProps {
-  value: FalAiModels;
+  value?: FalAiModels;
   onValueChange: (value: FalAiModels) => void;
 }
 
 export function ModelSelect({ value, onValueChange }: ModelSelectProps) {
   const selectedModel = MODEL_UI_OPTIONS.find((model) => model.value === value);
+
+  if (!value) return <Spinner className="size-6 animate-spin" />;
 
   return (
     <Select value={value} onValueChange={onValueChange}>

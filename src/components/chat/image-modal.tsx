@@ -10,14 +10,15 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { useAppStore } from '@/lib/state/store';
 
 interface ImageModalProps {
-  imageUrl: string | null;
   messages: UIMessage[];
-  onClose: () => void;
 }
 
-export function ImageModal({ imageUrl, messages, onClose }: ImageModalProps) {
+export function ImageModal({ messages }: ImageModalProps) {
+  const { openedImage: imageUrl, setOpenedImage } = useAppStore();
+
   const allImages = useMemo(() => {
     const images: string[] = [];
     messages.forEach((message) => {
@@ -33,7 +34,7 @@ export function ImageModal({ imageUrl, messages, onClose }: ImageModalProps) {
   const currentIndex = imageUrl ? allImages.indexOf(imageUrl) : -1;
 
   return (
-    <Dialog open={!!imageUrl} onOpenChange={onClose}>
+    <Dialog open={!!imageUrl} onOpenChange={() => setOpenedImage()}>
       <DialogContent className="shadow-none min-w-4/5 max-w-screen min-h-screen p-0 bg-transparent border-none rounded-none m-0">
         <DialogTitle className="hidden" />
         {imageUrl && currentIndex !== -1 && (

@@ -1,9 +1,12 @@
+'use client';
+
 import { ChatStatus } from 'ai';
 import { Paperclip, Send, X } from 'lucide-react';
 import Image from 'next/image';
-import { FormEvent, useMemo, useRef } from 'react';
+import { ChangeEvent, FormEvent, useRef, useState } from 'react';
 
 import { Attachments } from '@/components/chat/attachments';
+import { useImageSize } from '@/components/chat/chat-input/useImageSize';
 import { ImageSizeSelector } from '@/components/chat/image-size-selector';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,59 +15,38 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { ImageSize } from '@/lib/falai/types';
+import { MODES } from '@/lib/falai';
+import { useAppStore } from '@/lib/state/store';
 import { Message } from '@/lib/types';
 
+import { useHandleSubmit, UseHandleSubmitProps } from './useHandleSubmit';
+import { useReplyImageUrl } from './useReplyImageUrl';
+
 interface ChatInputProps {
-  input: string;
   status: ChatStatus;
   messages: Message[];
-  onInputChange: (value: string) => void;
-  onSubmit: (e: FormEvent) => void;
-  replyToMessageId?: string | null;
-  onClearReply?: () => void;
-  attachedImages?: File[];
-  onAttachImages?: (files: File[]) => void;
-  onRemoveImage?: (index: number) => void;
-  canAttachImages: boolean;
-  canGenerateImage: boolean;
-  imageSize: ImageSize;
-  onImageSizeChange: (size: ImageSize) => void;
+  sendMessage: UseHandleSubmitProps['sendMessage'];
 }
 
-export function ChatInput({
-  input,
-  status,
-  messages,
-  onInputChange,
-  onSubmit,
-  replyToMessageId,
-  onClearReply,
-  attachedImages = [],
-  canAttachImages,
-  canGenerateImage,
-  onAttachImages,
-  onRemoveImage,
-  imageSize,
-  onImageSizeChange,
-}: ChatInputProps) {
-  const replyToImage = useMemo(() => {
-    if (!replyToMessageId) return null;
+export function ChatInput({ status, messages, sendMessage }: ChatInputProps) {
+  const { setReplyMessageId, mode, replyMessageId, attachedImages } =
+    useAppStore();
+  const [input, setInput] = useState('');
+  const { imageSize, setImageSize } = useImageSize();
+  const canAttachImages = mode !== MODES.GENERATE;
 
-    const message = messages.find((msg) => msg.id === replyToMessageId);
-    if (!message) return null;
-
-    const imagePart = message.parts.find(
-      (part) => part.type === 'file' && part.mediaType?.startsWith('image/')
-    );
-
-    return imagePart?.type === 'file' ? imagePart.url : null;
-  }, [replyToMessageId, messages]);
+  const replyImageUrl = useReplyImageUrl({ messages });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const onSubmit = useHandleSubmit({
+    sendMessage,
+    input,
+    setInput,
+    imageSize,
+  });
 
-  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    onInputChange(e.target.value);
+  const handleTextareaChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
 
     // Auto-resize textarea
     const textarea = e.target;
@@ -79,49 +61,49 @@ export function ChatInput({
     textarea.style.height = `${lines * lineHeight}px`;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    onSubmit(e);
+  const handleSubmit = async (e: FormEvent) => {
+    const promise = onSubmit(e);
     // Reset textarea height after submit
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${3 * 24}px`; // Reset to minLines
     }
+    await promise;
   };
+
+  if (
+    mode !== MODES.GENERATE &&
+    messages.length === 0 &&
+    attachedImages.length === 0
+  ) {
+    return null;
+  }
 
   return (
     <footer className="border-t bg-white/80 backdrop-blur-sm p-4">
       <div className="max-w-4xl mx-auto">
-        {replyToImage && (
+        {replyImageUrl && (
           <div className="mb-2 flex items-center gap-2 p-2 bg-gray-100 rounded-lg">
             <span className="text-sm text-gray-600">Using image</span>
             <div className="relative">
               <Image
-                src={replyToImage}
+                src={replyImageUrl}
                 alt="Reply to image"
                 width={40}
                 height={40}
                 className="rounded object-cover"
               />
             </div>
-            {onClearReply && (
-              <button
-                onClick={onClearReply}
-                className="ml-auto p-1 hover:bg-gray-200 rounded-full transition-colors"
-                aria-label="Cancel reply"
-              >
-                <X className="h-4 w-4 text-gray-600" />
-              </button>
-            )}
+            <button
+              onClick={() => setReplyMessageId()}
+              className="ml-auto p-1 hover:bg-gray-200 rounded-full transition-colors"
+              aria-label="Cancel reply"
+            >
+              <X className="h-4 w-4 text-gray-600" />
+            </button>
           </div>
         )}
-        <Attachments
-          ref={fileInputRef}
-          attachedImages={attachedImages}
-          onAttachImages={onAttachImages}
-          onRemoveImage={onRemoveImage}
-          canAttachImages={canAttachImages}
-          disabled={status !== 'ready'}
-        />
+        <Attachments ref={fileInputRef} canAttachImages={canAttachImages} />
         <form
           onSubmit={handleSubmit}
           className="flex gap-2 items-start relative"
@@ -145,7 +127,7 @@ export function ChatInput({
             <div className="absolute right-2 bottom-2 flex items-center gap-1">
               <ImageSizeSelector
                 imageSize={imageSize}
-                onImageSizeChange={onImageSizeChange}
+                onImageSizeChange={setImageSize}
               />
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -171,9 +153,8 @@ export function ChatInput({
             type="submit"
             disabled={
               status !== 'ready' ||
-              (!canGenerateImage &&
-                !attachedImages?.length &&
-                !replyToMessageId)
+              !input.trim() ||
+              (canAttachImages && !attachedImages?.length && !replyMessageId)
             }
             size="icon"
           >
