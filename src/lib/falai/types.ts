@@ -11,6 +11,8 @@ export type ImageSizeVariants =
   | 'landscape_4_3'
   | 'landscape_16_9';
 
+export type Mode = 'generate' | 'edit' | 'upscale';
+
 export type ImageSize = { width: number; height: number } | ImageSizeVariants;
 
 export type OutputFormats = 'jpeg' | 'png';
@@ -128,6 +130,7 @@ export type ModelUiOption = Readonly<{
   value: FalAiModels;
   label: string;
   description: string;
+  modes: Array<Mode>;
 }>;
 
 export type ImageSizeUiOption = Readonly<{

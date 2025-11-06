@@ -2,7 +2,7 @@ import {
   FalAiModels,
   ImageSizeUiOption,
   ImageSizeVariants,
-  ModelCapability,
+  Mode,
   ModelUiOption,
 } from './types';
 
@@ -24,36 +24,30 @@ export const MODELS = {
   SANA: 'fal-ai/sana/v1.5/4.8b',
 } as const satisfies Record<string, FalAiModels>;
 
-export const MODEL_CAPABILITIES = {
-  [MODELS.QWEN_IMAGE_EDIT_PLUS]: {
-    canGenerateImages: false,
-    canEditImages: true,
-  },
-  [MODELS.FLUX_DEV]: {
-    canGenerateImages: true,
-    canEditImages: false,
-  },
-  [MODELS.SANA]: {
-    canGenerateImages: true,
-    canEditImages: false,
-  },
-} as const satisfies Record<FalAiModels, ModelCapability>;
+export const MODES = {
+  GENERATE: 'generate',
+  EDIT: 'edit',
+  UPSCALE: 'upscale',
+} as const satisfies Record<string, Mode>;
 
 export const MODEL_UI_OPTIONS = [
   {
     value: MODELS.QWEN_IMAGE_EDIT_PLUS,
     label: 'Qwen Image Edit Plus',
     description: '$0.03/MP, can only edit images',
+    modes: ['edit'],
   },
   {
     value: MODELS.FLUX_DEV,
     label: 'Flux Dev',
     description: '$0.025/MP, can only generate images',
+    modes: ['generate'],
   },
   {
     value: MODELS.SANA,
     label: 'Sana',
     description: '$0.01/MP, can only generate images',
+    modes: ['generate'],
   },
 ] as const satisfies ReadonlyArray<ModelUiOption>;
 

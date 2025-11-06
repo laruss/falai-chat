@@ -4,24 +4,21 @@ import { useEffect, useRef, useState } from 'react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { EMPTY_CHAT_CAPTION } from '@/constants';
+import { useCanReplyOnMessages } from '@/lib/hooks/useCanReplyOnMessages';
+import { useAppStore } from '@/lib/state/store';
 import { Message } from '@/lib/types';
+
+import { ConversationEmpty } from './conversation-empty';
 
 interface ConversationProps {
   messages: Message[];
   status: 'ready' | 'submitted' | 'streaming' | 'error';
-  onImageClick: (url: string) => void;
-  canReplyToMessage: boolean;
-  onReplyToMessage?: (messageId: string) => void;
 }
 
-export function Conversation({
-  messages,
-  status,
-  onImageClick,
-  onReplyToMessage,
-  canReplyToMessage,
-}: ConversationProps) {
+export function Conversation({ messages, status }: ConversationProps) {
+  const { setOpenedImage, setReplyMessageId, attachedImages } = useAppStore();
+  const canReplyToMessage = useCanReplyOnMessages();
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const [hoveredImage, setHoveredImage] = useState<string | null>(null);
   const [highlightedMessageId, setHighlightedMessageId] = useState<
@@ -38,11 +35,9 @@ export function Conversation({
     <div className="flex-1 overflow-hidden">
       <ScrollArea className="h-full">
         <div className="space-y-4 p-4 max-w-4xl mx-auto">
-          {messages.length === 0 && status === 'ready' && (
-            <div className="flex items-center justify-center h-[60vh]">
-              <p className="text-gray-400 text-lg">{EMPTY_CHAT_CAPTION}</p>
-            </div>
-          )}
+          {messages.length === 0 &&
+            status === 'ready' &&
+            attachedImages.length === 0 && <ConversationEmpty />}
           {messages.map((message) => {
             if (message.parts.length === 0) return null;
 
@@ -165,22 +160,20 @@ export function Conversation({
                             src={part.url}
                             alt="Generated image"
                             className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
-                            onClick={() => onImageClick(part.url)}
+                            onClick={() => setOpenedImage(part.url)}
                           />
-                          {hoveredImage === part.url &&
-                            canReplyToMessage &&
-                            onReplyToMessage && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onReplyToMessage(message.id);
-                                }}
-                                className="absolute top-2 right-2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all"
-                                aria-label="Reply to this image"
-                              >
-                                <Reply className="h-4 w-4 text-gray-700" />
-                              </button>
-                            )}
+                          {hoveredImage === part.url && canReplyToMessage && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setReplyMessageId(message.id);
+                              }}
+                              className="absolute top-2 right-2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all"
+                              aria-label="Reply to this image"
+                            >
+                              <Reply className="h-4 w-4 text-gray-700" />
+                            </button>
+                          )}
                         </div>
                       );
                     }

@@ -6,6 +6,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Next.js 15 chat application that uses AI SDK 5.0 to generate images via fal.ai models. The app uses Bun as the runtime and package manager.
 
+Key dependencies:
+
+- **AI SDK**: `ai@^5.0.57` and `@ai-sdk/fal@^1.0.15` for image generation
+- **State Management**: Zustand (`zustand@^5.0.8`) for global app state
+- **UI**: shadcn/ui components built on Radix UI primitives
+- **Icons**: `@mynaui/icons-react` (preferred) and `lucide-react`
+- **Validation**: Zod 4.x for runtime schema validation
+- **Styling**: Tailwind CSS 4.0
+
 ## Commands
 
 ### Development
@@ -53,43 +62,73 @@ const message: UIMessage = {
 };
 ```
 
+### State Management
+
+The app uses **Zustand** (`src/lib/state/store.ts`) for global state:
+
+- `mode`: Current operation mode (generate/edit)
+- `attachedImages`: Images attached for generation/editing
+- `model`: Selected fal.ai model
+- `replyMessageId`: ID of message being replied to
+- `openedImage`: Currently viewed image in modal
+- `status`: Current generation status
+- `error`: Error state
+
+Access via `useAppStore()` hook in components.
+
+### Chat Persistence
+
+Chats are stored as JSON files in `static/chats/` (server actions in `src/lib/chat-store.ts`):
+
+- `createChat(id)`: Create new empty chat
+- `getChat(id)`: Load chat messages
+- `getChatIds()`: List all chat IDs
+- `saveChat(id, messages)`: Persist chat (auto-called after image generation)
+- `deleteChat(id)`: Remove chat file
+
+Each chat file contains an array of `UIMessage<MessageMetadata>` objects.
+
 ### Image Generation Flow
 
 1. **Frontend** (`src/app/[id]/chat.tsx`):
    - User configures image size via `ImageSizeSelector`
-   - User submits prompt via `useChat` hook
+   - User submits prompt via `useChat` hook from `@ai-sdk/react`
    - Message metadata includes `model`, `useMessageId` (for image editing), and `settings` (image_size, etc.)
 2. **API Route** (`src/app/api/chat/route.ts`):
    - Receives `UIMessage[]` from client
    - Validates message metadata with Zod schemas (`messageMetadataSchema`, `settingsSchema`)
    - Creates a `UIMessageStream` with `createUIMessageStream()`
-   - Calls `generateImage()` from `src/lib/falai/helpers.ts`
+   - Calls `generateImage()` from `src/lib/falai/helpers.ts` which wraps `experimental_generateImage` from AI SDK
    - Writes file parts to stream with base64-encoded image data
+   - Saves generated image as PNG to `static/` folder
    - Returns stream via `createUIMessageStreamResponse()`
+   - `onFinish` callback saves updated messages to chat file
 3. **Frontend**: Displays images from message parts where `type === 'file'` and `mediaType.startsWith('image/')`
 
-### Static Files
+### Component Architecture
 
-Generated images are stored in the `static/` folder (defined in `src/constants.ts`). The API route currently simulates image generation by randomly selecting from pre-generated images in this folder.
+**Main Chat Flow**:
 
-### Component Structure
+- **Chat** (`src/app/[id]/chat.tsx`): Main chat container
+  - Uses `useChat` hook from `@ai-sdk/react` for message handling
+  - Integrates with Zustand store for global state (attachedImages, model selection, etc.)
+  - Passes `metadata` prop to API containing model, settings, and useMessageId
+- **Header** (`src/components/chat/header.tsx`): Model selector and title
+- **Conversation** (`src/components/chat/conversation.tsx`): Message list display
+- **ChatInput** (`src/components/chat/chat-input/`): Modular input system (split across multiple files)
+  - `chat-input.tsx`: Main container
+  - `useHandleSubmit.ts`: Submit logic with metadata preparation
+  - `useImageSize.ts`: Image size state management
+  - `useReplyImageUrl.ts`: Image URL extraction for replies
+  - **Attachments** (`src/components/chat/attachments.tsx`): Drag-and-drop image handling
+  - **ImageSizeSelector**: Preset and custom dimension configuration
+- **ImageModal** (`src/components/chat/image-modal.tsx`): Full-screen viewer
+  - Uses Embla Carousel for image navigation
+  - Displays images in reverse chronological order (newest first)
 
-- **Chat** (`src/app/[id]/chat.tsx`): Main container, manages state (input, selected model, attached images, image size)
-- **Header** (`src/components/chat/header.tsx`): App title and model selector
-- **Conversation** (`src/components/chat/conversation.tsx`): Message list with avatar, text, and images
-- **ChatInput** (`src/components/chat/chat-input.tsx`): Input field container
-  - **Attachments** (`src/components/chat/attachments.tsx`): Image attachment with drag-and-drop
-  - **ImageSizeSelector** (`src/components/chat/image-size-selector.tsx`): Image size configuration with preset and custom options
-- **ImageModal** (`src/components/chat/image-modal.tsx`): Full-screen image viewer with carousel navigation
-  - Extracts all images from messages in reverse order (newest first)
-  - Uses Embla Carousel for navigation
-  - Keyboard navigation enabled via `tabIndex={0}` on Carousel component
+**UI Components**: shadcn/ui components in `src/components/ui/` built on Radix UI primitives.
 
-### Styling
-
-- **Tailwind CSS 4.0** with custom configuration
-- **shadcn/ui** components in `src/components/ui/`
-- Path alias `@/*` maps to `src/*`
+**Styling**: Tailwind CSS 4.0 with `@/*` path alias mapping to `src/*`.
 
 ## Type Safety
 
@@ -128,7 +167,45 @@ Never use `any` or `unknown` types. Use proper type narrowing or define interfac
 
 Available fal.ai models are defined in `src/lib/falai/constants.ts`:
 
-- `SANA`: Cheapest option ($0.01/megapixel)
-- `FLUX_DEV`: Mid-tier ($0.025/megapixel)
-- `QWEN_IMAGE_EDIT_PLUS`: Image creation and editing ($0.03/megapixel)
-- use @mynaui/icons-react as icons
+- `SANA`: Cheapest option ($0.01/megapixel) - text-to-image only
+- `FLUX_DEV`: Mid-tier ($0.025/megapixel) - text-to-image only
+- `QWEN_IMAGE_EDIT_PLUS`: Most expensive ($0.03/megapixel) - supports both text-to-image and image editing
+
+When adding features that require image editing (reply to images, modify existing generations), only `QWEN_IMAGE_EDIT_PLUS` supports this functionality.
+
+## Environment Setup
+
+Required environment variables (`.env.local`):
+
+```env
+FAL_API_KEY=your_fal_ai_api_key_here
+```
+
+Get your API key from [fal.ai](https://fal.ai).
+
+## File Structure
+
+```
+src/
+├── app/
+│   ├── [id]/                    # Dynamic chat routes (individual chat view)
+│   ├── api/chat/                # Chat API endpoint (POST handler)
+│   ├── layout.tsx               # Root layout with theme provider
+│   ├── page.tsx                 # Chat list/home page
+│   └── main-page-client.tsx     # Client-side chat list logic
+├── components/
+│   ├── chat/                    # Chat-specific components
+│   └── ui/                      # shadcn/ui reusable components
+├── lib/
+│   ├── falai/                   # fal.ai integration (models, types, helpers)
+│   ├── hooks/                   # Custom React hooks
+│   ├── state/                   # Zustand store and types
+│   ├── chat-store.ts            # Server actions for chat persistence
+│   ├── helpers.ts               # Utility functions
+│   └── types.ts                 # Zod schemas and TypeScript types
+├── constants.ts                 # App-wide constants (STATIC_FOLDER, etc.)
+└── ...
+static/
+├── chats/                       # Persisted chat JSON files
+└── *.png                        # Generated images
+```

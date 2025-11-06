@@ -183,7 +183,9 @@ MIT
 
 ## TODO
 
-- [ ] Migrate to Zustand for state management
+- [x] Migrate to Zustand for state management
+- [ ] Implement Upscaling functionality for generated images
+- [ ] Add support for more models (e.g. nano-banana / flux-kontext / etc.)
 - [ ] Save chat settings (model, theme, etc.) to local storage
   - [ ] replace local storage persistence with Zustand persist middleware
 - [ ] Add the ability to regenerate last AI message and "reply" button
@@ -191,7 +193,7 @@ MIT
 - [x] Add generation parameters (image size, steps, guidance scale) to model options
   - [x] Image size selector with preset and custom options
   - [ ] Other settings (steps, guidance scale, etc.)
-- [ ] Add possibility automatically determine image size based on the attached image (if only 1 image is attached)
+- [x] Add possibility automatically determine image size based on the attached image (if only 1 image is attached)
 - [ ] Add creation and last updated timestamps to chat sessions
 - [ ] Display chat metadata (date, message count) in chat list
 - [ ] Add unit tests for utility functions and helpers
@@ -206,6 +208,6 @@ MIT
 - [ ] Add support for batch image generation
 - [ ] Create error boundary components for better error handling
 - [ ] Add analytics/telemetry (optional)
-- [ ] Implement dark mode toggle
+- [ ] Implement dark modes toggle
 - [ ] Add accessibility improvements (ARIA labels, keyboard navigation)
 - [ ] Optimize image loading with lazy loading and placeholders
