@@ -184,6 +184,7 @@ MIT
 ## TODO
 
 - [x] Migrate to Zustand for state management
+- [ ] Fix current model selection bug
 - [ ] Implement Upscaling functionality for generated images
 - [ ] Add support for more models (e.g. nano-banana / f̶l̶u̶x̶-̶k̶o̶n̶t̶e̶x̶t̶ / etc.)
 - [ ] Save chat settings (model, theme, etc.) to local storage

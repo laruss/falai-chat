@@ -14,4 +14,5 @@ export const useAppStore = create<State>()((set) => ({
   setStatus: (status) => set(() => ({ status })),
   setError: (error) => set(() => ({ error })),
   setAttachedImages: (images) => set(() => ({ attachedImages: images })),
+  setEditingMessageId: (id) => set(() => ({ editingMessageId: id })),
 }));

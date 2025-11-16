@@ -17,4 +17,6 @@ export type State = {
   setError: (error?: Error) => void;
   attachedImages: Array<File>;
   setAttachedImages: (images: Array<File>) => void;
+  editingMessageId?: string;
+  setEditingMessageId: (id?: string) => void;
 };

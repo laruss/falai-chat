@@ -7,8 +7,10 @@ import { toast } from 'sonner';
 import { useAppStore } from '@/lib/state/store';
 
 export const DragNDrop = () => {
-  const { setAttachedImages, attachedImages, mode } = useAppStore();
+  const { setAttachedImages, attachedImages, mode, editingMessageId } =
+    useAppStore();
   const isNotSupported = mode === 'generate';
+  const isEditingMessage = Boolean(editingMessageId);
   const [isDragging, setIsDragging] = useState(false);
   const dragCounterRef = useRef(0);
 
@@ -45,6 +47,11 @@ export const DragNDrop = () => {
 
       setIsDragging(false);
       dragCounterRef.current = 0;
+
+      if (isEditingMessage) {
+        toast.error('Cannot attach images while editing a message');
+        return;
+      }
 
       if (isNotSupported) {
         toast.error('Attaching images are not supported in this mode');
@@ -98,6 +105,13 @@ export const DragNDrop = () => {
       // If no images, don't interfere with normal paste
       if (imageFiles.length === 0) return;
 
+      // We have images, check if editing is active
+      if (isEditingMessage) {
+        e.preventDefault();
+        toast.error('Cannot attach images while editing a message');
+        return;
+      }
+
       // We have images, check if mode supports them
       if (isNotSupported) {
         toast.error('Attaching images are not supported in this mode');
@@ -125,7 +139,7 @@ export const DragNDrop = () => {
       window.removeEventListener('drop', handleDrop);
       window.removeEventListener('paste', handlePaste);
     };
-  }, [attachedImages, setAttachedImages, isNotSupported]);
+  }, [attachedImages, setAttachedImages, isNotSupported, isEditingMessage]);
 
   if (!isDragging) return null;
 

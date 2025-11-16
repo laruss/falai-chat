@@ -29,11 +29,17 @@ interface ChatInputProps {
 }
 
 export function ChatInput({ status, messages, sendMessage }: ChatInputProps) {
-  const { setReplyMessageId, mode, replyMessageId, attachedImages } =
-    useAppStore();
+  const {
+    setReplyMessageId,
+    mode,
+    replyMessageId,
+    attachedImages,
+    editingMessageId,
+  } = useAppStore();
   const [input, setInput] = useState('');
   const { imageSize, setImageSize } = useImageSize();
   const canAttachImages = mode !== MODES.GENERATE;
+  const isEditingMessage = Boolean(editingMessageId);
 
   const replyImageUrl = useReplyImageUrl({ messages });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -119,8 +125,14 @@ export function ChatInput({ status, messages, sendMessage }: ChatInputProps) {
                   handleSubmit(e);
                 }
               }}
-              disabled={!['ready', 'error'].includes(status)}
-              placeholder="Input your prompt... (Shift+Enter for new line)"
+              disabled={
+                !['ready', 'error'].includes(status) || isEditingMessage
+              }
+              placeholder={
+                isEditingMessage
+                  ? 'Editing message...'
+                  : 'Input your prompt... (Shift+Enter for new line)'
+              }
               className="flex-1 min-h-[72px] max-h-[192px] resize-none pr-10"
               rows={3}
             />
@@ -134,7 +146,9 @@ export function ChatInput({ status, messages, sendMessage }: ChatInputProps) {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    disabled={status !== 'ready' || !canAttachImages}
+                    disabled={
+                      status !== 'ready' || !canAttachImages || isEditingMessage
+                    }
                     className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     aria-label="Attach file"
                   >
@@ -154,7 +168,8 @@ export function ChatInput({ status, messages, sendMessage }: ChatInputProps) {
             disabled={
               status !== 'ready' ||
               !input.trim() ||
-              (canAttachImages && !attachedImages?.length && !replyMessageId)
+              (canAttachImages && !attachedImages?.length && !replyMessageId) ||
+              isEditingMessage
             }
             size="icon"
           >

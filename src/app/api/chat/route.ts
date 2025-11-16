@@ -46,7 +46,13 @@ export async function POST(req: ApiRequest) {
 
       let image: GeneratedFile;
 
-      const { image_size, enable_safety_checker, negative_prompt, acceleration, ...fluxSettings } = settings;
+      const {
+        image_size,
+        enable_safety_checker,
+        negative_prompt,
+        acceleration,
+        ...fluxSettings
+      } = settings;
 
       // separate flow to handle flux kontext
       if (messageData?.model === MODELS.FLUX_KONTEXT) {
