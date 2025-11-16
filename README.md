@@ -185,10 +185,10 @@ MIT
 
 - [x] Migrate to Zustand for state management
 - [ ] Implement Upscaling functionality for generated images
-- [ ] Add support for more models (e.g. nano-banana / flux-kontext / etc.)
+- [ ] Add support for more models (e.g. nano-banana / f̶l̶u̶x̶-̶k̶o̶n̶t̶e̶x̶t̶ / etc.)
 - [ ] Save chat settings (model, theme, etc.) to local storage
   - [ ] replace local storage persistence with Zustand persist middleware
-- [ ] Add the ability to regenerate last AI message and "reply" button
+- [x] Add the ability to regenerate last AI message
 - [ ] Improve error handling with user-friendly error messages and retry logic
 - [x] Add generation parameters (image size, steps, guidance scale) to model options
   - [x] Image size selector with preset and custom options
@@ -200,14 +200,9 @@ MIT
 - [ ] Add integration tests for API routes
 - [ ] Add tests with React Testing Library
 - [ ] Implement chat search/filter functionality
-- [ ] Add export chat history feature (JSON, Markdown)
-- [ ] Add image download functionality
+- [x] Add image download functionality
 - [ ] Implement keyboard shortcuts for common actions
-- [ ] Add loading states and progress indicators for image generation
 - [ ] Implement rate limiting for API calls
 - [ ] Add support for batch image generation
 - [ ] Create error boundary components for better error handling
-- [ ] Add analytics/telemetry (optional)
 - [ ] Implement dark modes toggle
-- [ ] Add accessibility improvements (ARIA labels, keyboard navigation)
-- [ ] Optimize image loading with lazy loading and placeholders

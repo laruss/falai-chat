@@ -1,5 +1,6 @@
 import {
   FalAiModels,
+  FluxKontextAspectRatio,
   ImageSizeUiOption,
   ImageSizeVariants,
   Mode,
@@ -9,7 +10,7 @@ import {
 export const MODELS = {
   /**
    * Price: $0.03 per megapixel
-   * Model for both creating images and editing them.
+   * Model for editing images.
    */
   QWEN_IMAGE_EDIT_PLUS: 'fal-ai/qwen-image-edit-plus',
   /**
@@ -22,6 +23,11 @@ export const MODELS = {
    * Model for creating images.
    */
   SANA: 'fal-ai/sana/v1.5/4.8b',
+  /**
+   * Price: ?? per megapixel (need to check)
+   * Model for editing images.
+   */
+  FLUX_KONTEXT: 'fal-ai/flux-pro/kontext',
 } as const satisfies Record<string, FalAiModels>;
 
 export const MODES = {
@@ -49,6 +55,12 @@ export const MODEL_UI_OPTIONS = [
     description: '$0.01/MP, can only generate images',
     modes: ['generate'],
   },
+  {
+    value: MODELS.FLUX_KONTEXT,
+    label: 'Flux Kontext Pro',
+    description: '$??/MP, can edit images',
+    modes: ['edit'],
+  },
 ] as const satisfies ReadonlyArray<ModelUiOption>;
 
 export const IMAGE_SIZES = {
@@ -59,6 +71,15 @@ export const IMAGE_SIZES = {
   LANDSCAPE_4_3: 'landscape_4_3',
   LANDSCAPE_16_9: 'landscape_16_9',
 } as const satisfies Record<string, ImageSizeVariants>;
+
+export const FLUX_KONTEXT_ASPECT_RATIO_IMAGE_SIZE_MAPPER = {
+  square_hd: '1:1',
+  square: '1:1',
+  portrait_4_3: '3:4',
+  portrait_16_9: '9:16',
+  landscape_4_3: '4:3',
+  landscape_16_9: '16:9',
+} as const satisfies Record<ImageSizeVariants, FluxKontextAspectRatio>;
 
 export const IMAGE_SIZE_UI_OPTIONS = [
   {

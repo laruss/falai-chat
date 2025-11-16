@@ -15,7 +15,7 @@ export const useMode = () => {
     if (paramsMode && mode !== paramsMode) {
       setMode(paramsMode);
     }
-  }, [searchParams, mode, setMode]);
+  }, [searchParams, setMode]);
 
   return mode;
 };

@@ -1,10 +1,11 @@
-import { create } from 'zustand/react';
+import { create } from 'zustand';
 
-import { MODES } from '@/lib/falai';
+import { MODELS, MODES } from '@/lib/falai';
 import { State } from '@/lib/state/types';
 
 export const useAppStore = create<State>()((set) => ({
   mode: MODES.GENERATE,
+  model: MODELS.FLUX_DEV,
   attachedImages: [],
   setModel: (model) => set(() => ({ model })),
   setMode: (mode) => set(() => ({ mode })),

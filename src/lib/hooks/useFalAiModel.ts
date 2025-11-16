@@ -11,10 +11,13 @@ export const useFalAiModel = ({ mode }: { mode?: Mode }) => {
 
   useEffect(() => {
     const modelParam = searchParams.get('model') as FalAiModels | null;
-    if (modelParam && model !== modelParam) {
-      setModel(modelParam);
-      return;
+    if (modelParam) {
+      // URL param takes priority
+      if (model !== modelParam) {
+        setModel(modelParam);
+      }
     } else {
+      // Only use mode-based selection if no URL param
       const modelByMode = MODEL_UI_OPTIONS.find((m) =>
         (m.modes as Array<Mode>).includes(mode as Mode)
       );
@@ -22,7 +25,7 @@ export const useFalAiModel = ({ mode }: { mode?: Mode }) => {
         setModel(modelByMode.value);
       }
     }
-  }, [searchParams, mode, model, setModel]);
+  }, [searchParams, mode, setModel]);
 
   return model;
 };

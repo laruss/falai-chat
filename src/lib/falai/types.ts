@@ -1,7 +1,8 @@
 export type FalAiModels =
   | 'fal-ai/qwen-image-edit-plus'
   | 'fal-ai/flux/dev'
-  | 'fal-ai/sana/v1.5/4.8b';
+  | 'fal-ai/sana/v1.5/4.8b'
+  | 'fal-ai/flux-pro/kontext';
 
 export type ImageSizeVariants =
   | 'square_hd'
@@ -94,6 +95,18 @@ export type SanaParams = Omit<BasicParams, 'image_urls'> & {
   style_name?: StyleName;
 };
 
+export type FluxKontextAspectRatio = '21:9' | '16:9' | '4:3' | '3:2' | '1:1' | '2:3' | '3:4' | '9:16' | '9:21';
+
+export type FluxKontextParams = Omit<
+  BasicParams,
+  'enable_safety_checker' | 'image_urls' | 'negative_prompt' | 'acceleration' | 'image_size'
+> & {
+  safety_tolerance?: '1' | '2' | '3' | '4' | '5' | '6';
+  enhance_prompt?: boolean;
+  aspect_ratio?: FluxKontextAspectRatio;
+  image_url: string;
+};
+
 export type OutputImageSize = Readonly<{
   width: number;
   height: number;
@@ -119,6 +132,7 @@ export type FalAiModelParamsMap = {
   'fal-ai/qwen-image-edit-plus': QwenImageEditPlusParams;
   'fal-ai/flux/dev': FluxDevParams;
   'fal-ai/sana/v1.5/4.8b': SanaParams;
+  'fal-ai/flux-pro/kontext': FluxKontextParams;
 };
 
 export type ModelCapability = Readonly<{

@@ -24,7 +24,7 @@ export default function Chat({ initMessages, id }: ChatProps) {
   const model = useFalAiModel({ mode });
   const { setStatus, setError, attachedImages } = useAppStore();
 
-  const { messages, sendMessage, status, error } = useChat<Message>({
+  const { messages, sendMessage, status, error, regenerate } = useChat<Message>({
     transport: new DefaultChatTransport({
       api: '/api/chat',
     }),
@@ -44,7 +44,7 @@ export default function Chat({ initMessages, id }: ChatProps) {
     <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header selectedModel={model} />
 
-      <Conversation messages={messages} status={status} />
+      <Conversation messages={messages} status={status} regenerate={regenerate} />
 
       <ChatInput
         status={status}
@@ -53,7 +53,7 @@ export default function Chat({ initMessages, id }: ChatProps) {
       />
 
       <ImageModal messages={messages} />
-      {(messages.length || attachedImages.length) && <DragNDrop />}
+      {Boolean((messages.length || attachedImages.length)) && <DragNDrop />}
     </div>
   );
 }

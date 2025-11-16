@@ -1,4 +1,4 @@
-import { Loader2, Reply } from 'lucide-react';
+import { Download, Loader2, Reply, RotateCw } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
@@ -13,9 +13,10 @@ import { ConversationEmpty } from './conversation-empty';
 interface ConversationProps {
   messages: Message[];
   status: 'ready' | 'submitted' | 'streaming' | 'error';
+  regenerate: () => void;
 }
 
-export function Conversation({ messages, status }: ConversationProps) {
+export function Conversation({ messages, status, regenerate }: ConversationProps) {
   const { setOpenedImage, setReplyMessageId, attachedImages } = useAppStore();
   const canReplyToMessage = useCanReplyOnMessages();
 
@@ -38,8 +39,11 @@ export function Conversation({ messages, status }: ConversationProps) {
           {messages.length === 0 &&
             status === 'ready' &&
             attachedImages.length === 0 && <ConversationEmpty />}
-          {messages.map((message) => {
+          {messages.map((message, messageIndex) => {
             if (message.parts.length === 0) return null;
+
+            const isLastMessage = messageIndex === messages.length - 1;
+            const isAssistantMessage = message.role === 'assistant';
 
             return (
               <div
@@ -66,7 +70,7 @@ export function Conversation({ messages, status }: ConversationProps) {
                 </Avatar>
 
                 <div
-                  className={`flex flex-col gap-2 max-w-[70%] ${
+                  className={`relative flex flex-col gap-2 max-w-[70%] ${
                     message.role === 'user' ? 'items-end' : 'items-start'
                   }`}
                 >
@@ -162,6 +166,21 @@ export function Conversation({ messages, status }: ConversationProps) {
                             className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
                             onClick={() => setOpenedImage(part.url)}
                           />
+                          {hoveredImage === part.url && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const link = document.createElement('a');
+                                link.href = part.url;
+                                link.download = `image-${Date.now()}.png`;
+                                link.click();
+                              }}
+                              className="absolute top-2 left-2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all"
+                              aria-label="Download image"
+                            >
+                              <Download className="h-4 w-4 text-gray-700" />
+                            </button>
+                          )}
                           {hoveredImage === part.url && canReplyToMessage && (
                             <button
                               onClick={(e) => {
@@ -174,6 +193,21 @@ export function Conversation({ messages, status }: ConversationProps) {
                               <Reply className="h-4 w-4 text-gray-700" />
                             </button>
                           )}
+                          {hoveredImage === part.url &&
+                            isLastMessage &&
+                            isAssistantMessage &&
+                            (status === 'ready' || status === 'error') && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  regenerate();
+                                }}
+                                className="absolute bottom-2 right-2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all"
+                                aria-label="Regenerate image"
+                              >
+                                <RotateCw className="h-4 w-4 text-gray-700" />
+                              </button>
+                            )}
                         </div>
                       );
                     }
