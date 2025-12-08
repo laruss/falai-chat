@@ -72,7 +72,7 @@ export async function POST(req: ApiRequest) {
           prompt: messageData.text,
           options: {
             ...fluxSettings,
-            safety_tolerance: '5' as const,
+            safety_tolerance: '6' as const,
             enhance_prompt: false,
             aspect_ratio,
             image_url: messageData.media[0].url,
@@ -86,6 +86,9 @@ export async function POST(req: ApiRequest) {
           prompt: messageData.text,
           options: {
             ...settings,
+            ...(messageData.model === MODELS.FLUX_2_FLEX
+              ? { safety_tolerance: '5' as const }
+              : {}),
             image_urls: messageData.media.map((file) => file.url),
           },
         });

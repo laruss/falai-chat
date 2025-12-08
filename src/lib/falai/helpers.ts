@@ -1,9 +1,9 @@
 import { fal } from '@ai-sdk/fal';
-import { experimental_generateImage } from 'ai';
+import { experimental_generateImage as generateImage } from 'ai';
 
 import { FalAiModelParamsMap, FalAiModels } from './types';
 
-export const generateImage = async <Model extends FalAiModels>({
+const gI = async <Model extends FalAiModels>({
   model,
   prompt,
   options,
@@ -12,7 +12,7 @@ export const generateImage = async <Model extends FalAiModels>({
   prompt: string;
   options: FalAiModelParamsMap[Model];
 }) => {
-  return experimental_generateImage({
+  return generateImage({
     model: fal.image(model),
     prompt,
     providerOptions: {
@@ -20,3 +20,5 @@ export const generateImage = async <Model extends FalAiModels>({
     },
   });
 };
+
+export { gI as generateImage };

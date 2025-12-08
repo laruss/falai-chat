@@ -19,6 +19,12 @@ export const MODELS = {
    */
   FLUX_DEV: 'fal-ai/flux/dev',
   /**
+   * Price: $0.06 per megapixel
+   * Model for creating images.
+   * The best model from Flux
+   */
+  FLUX_2_FLEX: 'fal-ai/flux-2-flex',
+  /**
    * Price: $0.01 per megapixel (CHEAPEST MODEL)
    * Model for creating images.
    */
@@ -47,6 +53,12 @@ export const MODEL_UI_OPTIONS = [
     value: MODELS.FLUX_DEV,
     label: 'Flux Dev',
     description: '$0.025/MP, can only generate images',
+    modes: ['generate'],
+  },
+  {
+    value: MODELS.FLUX_2_FLEX,
+    label: 'Flux 2 Flex',
+    description: '$0.06/MP, can only generate images',
     modes: ['generate'],
   },
   {
